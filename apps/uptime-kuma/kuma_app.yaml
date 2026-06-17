@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: uptime-kuma
+  namespace: monitoring
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/2RaLXIX/my_lab.git
+    targetRevision: HEAD
+    path: apps/uptime-kuma
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
