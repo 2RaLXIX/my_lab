@@ -3,8 +3,7 @@ kind: Application
 
 metadata:
   name: uptime-kuma
-  namespace: monitoring
-
+  namespace: argocd
 spec:
   project: default
 
