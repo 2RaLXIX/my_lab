@@ -9,7 +9,7 @@ spec:
   ingressClassName: traefik
 
   rules:
-  - host: uptime.home.arpa
+  - host: uptime-kuma.home.arpa
 
     http:
       paths:
