@@ -6,7 +6,7 @@ metadata:
   namespace: monitoring
 
 spec:
-  replicas: 0
+  replicas: 1
 
   selector:
     matchLabels:
@@ -21,6 +21,10 @@ spec:
       containers:
       - name: uptime-kuma
         image: louislam/uptime-kuma:1
+        
+        volumeMounts:
+        - name: kuma-data
+          mountPath: /app/data
 
         ports:
         - containerPort: 3001
@@ -33,3 +37,9 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
+        
+        volumes:
+        - name: kuma-data
+          persistentVolumeClaim:
+            claimName: uptime-kuma-pvc
+
