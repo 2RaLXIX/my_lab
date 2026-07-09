@@ -25,6 +25,10 @@ spec:
       ref: values
 
   syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      
   syncOptions:
     - ServerSideApply=true
     - CreateNamespace=true
