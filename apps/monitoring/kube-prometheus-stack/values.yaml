@@ -1,5 +1,6 @@
 grafana:
-  enabled: true
+  initChownData:
+  enabled: false
 
   replicas: 1
 
