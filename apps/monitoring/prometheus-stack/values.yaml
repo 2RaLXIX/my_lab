@@ -1,4 +1,6 @@
 grafana:
+  initChownData:
+  enabled: false
   persistence:
     enabled: true
     size: 1Gi
