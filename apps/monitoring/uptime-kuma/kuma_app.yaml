@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/2RaLXIX/my_lab.git
     targetRevision: HEAD
-    path: apps/uptime-kuma
+    path: apps/monitoring/uptime-kuma
 
   destination:
     server: https://kubernetes.default.svc
