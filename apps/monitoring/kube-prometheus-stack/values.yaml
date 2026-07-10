@@ -1,8 +1,8 @@
 grafana:
-  initChownData:
-  enabled: false
+  enabled: true
 
-  replicas: 1
+  initChownData:
+    enabled: false
 
   persistence:
     enabled: true
