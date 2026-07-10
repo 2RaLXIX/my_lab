@@ -20,6 +20,10 @@ spec:
       targetRevision: HEAD
       ref: values
 
+    - repoURL: https://github.com/2RaLXIX/my_lab.git
+      targetRevision: HEAD
+      path: apps/monitoring/kube-prometheus-stack/manifests
+
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
