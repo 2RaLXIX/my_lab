@@ -6,7 +6,7 @@ metadata:
   namespace: monitoring
 
 spec:
-  ingressClassName: traefik
+  ingressClassName: nginx
 
   rules:
   - host: uptime-kuma.home.arpa
