@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: apps-charts
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/2RaLXIX/my_lab.git
+        revision: HEAD
+        files:
+          - path: "apps/**/appset-chart.yaml"
+  template:
+    metadata:
+      name: '{{.path.basename}}'
+    spec:
+      project: default
+      sources:
+        - repoURL: '{{.chart.repoURL}}'
+          chart: '{{.chart.name}}'
+          targetRevision: '{{.chart.targetRevision}}'
+          helm:
+            valueFiles:
+              - $values/{{.path.path}}/values.yaml
+        - repoURL: https://github.com/2RaLXIX/my_lab.git
+          targetRevision: HEAD
+          ref: values
+        - repoURL: https://github.com/2RaLXIX/my_lab.git
+          targetRevision: HEAD
+          path: '{{.extraManifestsPath}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{.namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - RespectIgnoreDifferences=true
