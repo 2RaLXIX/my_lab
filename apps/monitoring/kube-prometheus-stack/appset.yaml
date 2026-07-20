@@ -1,0 +1,6 @@
+namespace: monitoring
+chart:
+  repoURL: https://prometheus-community.github.io/helm-charts
+  name: kube-prometheus-stack
+  targetRevision: 76.5.1
+extraManifestsPath: apps/monitoring/kube-prometheus-stack/manifests

@@ -1,0 +1,54 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: apps
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/2RaLXIX/my_lab.git
+        revision: HEAD
+        files:
+          - path: "apps/**/appset.yaml"
+  template:
+    metadata:
+      name: '{{.path.basename}}'
+    spec:
+      project: default
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{.namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - RespectIgnoreDifferences=true
+  templatePatch: |
+    spec:
+    {{- if .chart }}
+      sources:
+        - repoURL: {{.chart.repoURL}}
+          chart: {{.chart.name}}
+          targetRevision: {{.chart.targetRevision}}
+          helm:
+            valueFiles:
+              - $values/{{.path.path}}/values.yaml
+        - repoURL: https://github.com/2RaLXIX/my_lab.git
+          targetRevision: HEAD
+          ref: values
+      {{- if .extraManifestsPath }}
+        - repoURL: https://github.com/2RaLXIX/my_lab.git
+          targetRevision: HEAD
+          path: {{.extraManifestsPath}}
+      {{- end }}
+    {{- else }}
+      source:
+        repoURL: https://github.com/2RaLXIX/my_lab.git
+        targetRevision: HEAD
+        path: {{.path.path}}
+    {{- end }}
