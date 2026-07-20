@@ -28,9 +28,9 @@ spec:
           - CreateNamespace=true
           - ServerSideApply=true
           - RespectIgnoreDifferences=true
-  templatePatch: |
+templatePatch: |
     spec:
-    {{- if .chart }}
+    {{- if hasKey . "chart" }}
       sources:
         - repoURL: {{.chart.repoURL}}
           chart: {{.chart.name}}
@@ -41,7 +41,7 @@ spec:
         - repoURL: https://github.com/2RaLXIX/my_lab.git
           targetRevision: HEAD
           ref: values
-      {{- if .extraManifestsPath }}
+      {{- if hasKey . "extraManifestsPath" }}
         - repoURL: https://github.com/2RaLXIX/my_lab.git
           targetRevision: HEAD
           path: {{.extraManifestsPath}}
