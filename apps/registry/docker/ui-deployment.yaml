@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docker-registry-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: docker-registry-ui
+  template:
+    metadata:
+      labels:
+        app: docker-registry-ui
+    spec:
+      containers:
+        - name: registry-ui
+          image: joxit/docker-registry-ui:main
+          ports:
+            - containerPort: 80
+
+          env:
+            - name: SINGLE_REGISTRY
+              value: "true"
+
+            - name: REGISTRY_TITLE
+              value: "My Docker Registry"
+
+            - name: DELETE_IMAGES
+              value: "true"
+
+            - name: SHOW_CONTENT_DIGEST
+              value: "true"
+
+            - name: NGINX_PROXY_PASS_URL
+              value: "http://docker-registry:5000"
+
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
