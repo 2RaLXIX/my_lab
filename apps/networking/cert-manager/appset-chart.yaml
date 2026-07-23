@@ -1,0 +1,8 @@
+chart:
+  repoURL: https://charts.jetstack.io
+  name: cert-manager
+  targetRevision: v1.18.2
+
+namespace: cert-manager
+
+extraManifestsPath: apps/networking/cert-manager/manifests
