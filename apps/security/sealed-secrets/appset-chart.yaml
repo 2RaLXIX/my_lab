@@ -1,0 +1,6 @@
+chart:
+  repoURL: https://bitnami-labs.github.io/sealed-secrets
+  name: sealed-secrets
+  targetRevision: 2.17.3
+
+namespace: kube-system
