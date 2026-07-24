@@ -4,3 +4,5 @@ chart:
   targetRevision: 2.17.3
 
 namespace: kube-system
+
+extraManifestsPath: apps/security/sealed-secrets/manifests
