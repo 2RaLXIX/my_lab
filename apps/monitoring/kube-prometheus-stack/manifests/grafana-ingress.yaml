@@ -3,17 +3,25 @@ kind: Ingress
 metadata:
   name: grafana
   namespace: monitoring
+  annotations:
+    cert-manager.io/cluster-issuer: local-ca
+
 spec:
   ingressClassName: nginx
 
+  tls:
+    - hosts:
+        - grafana.home.arpa
+      secretName: grafana-tls
+
   rules:
-  - host: grafana.home.arpa
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: kube-prometheus-stack-grafana
-            port:
-              number: 80
+    - host: grafana.home.arpa
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kube-prometheus-stack-grafana
+                port:
+                  number: 80

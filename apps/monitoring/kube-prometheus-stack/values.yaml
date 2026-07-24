@@ -1,20 +1,5 @@
 grafana:
   enabled: true
-
-  ingress:
-    enabled: true
-    ingressClassName: nginx
-
-    annotations:
-      cert-manager.io/cluster-issuer: local-ca
-
-    hosts:
-      - grafana.home.arpa
-
-    tls:
-      - secretName: grafana-tls
-        hosts:
-          - grafana.home.arpa
           
   initChownData:
     enabled: false
