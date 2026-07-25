@@ -3,10 +3,16 @@ kind: Ingress
 
 metadata:
   name: uptime-kuma
+  annotations:
+    cert-manager.io/cluster-issuer: local-ca
   namespace: monitoring
 
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - uptime-kuma.home.arpa
+      secretName: uptime-kuma-tls
 
   rules:
   - host: uptime-kuma.home.arpa
