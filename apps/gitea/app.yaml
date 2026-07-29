@@ -1,19 +1,28 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
+
 metadata:
   name: gitea
   namespace: argocd
+
 spec:
   project: default
 
-  source:
-    repoURL: https://dl.gitea.com/charts/
-    chart: gitea
-    targetRevision: 12.3.0
+  sources:
 
-    helm:
-      valueFiles:
-        - values.yaml
+    # Helm Chart
+    - repoURL: https://dl.gitea.com/charts
+      chart: gitea
+      targetRevision: 12.3.0
+
+      helm:
+        valueFiles:
+          - $values/apps/gitea/values.yaml
+
+    # Git Repository
+    - repoURL: https://github.com/2RaLXIX/my_lab.git
+      targetRevision: main
+      ref: values
 
   destination:
     server: https://kubernetes.default.svc
