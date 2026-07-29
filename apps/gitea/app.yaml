@@ -9,17 +9,13 @@ spec:
   project: default
 
   sources:
-
-    # Helm Chart
     - repoURL: https://dl.gitea.com/charts
       chart: gitea
       targetRevision: 12.3.0
-
       helm:
         valueFiles:
           - $values/apps/gitea/values.yaml
 
-    # Git Repository
     - repoURL: https://github.com/2RaLXIX/my_lab.git
       targetRevision: main
       ref: values
@@ -32,6 +28,5 @@ spec:
     automated:
       prune: true
       selfHeal: true
-
     syncOptions:
       - CreateNamespace=true
