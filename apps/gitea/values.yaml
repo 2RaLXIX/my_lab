@@ -4,6 +4,10 @@ gitea:
     password: Spoon19
     email: admin@home.arpa
 
+  config:
+    database:
+      DB_TYPE: sqlite3
+
 persistence:
   enabled: true
   size: 3Gi
@@ -11,10 +15,13 @@ persistence:
 postgresql:
   enabled: false
 
-redis-cluster:
+postgresql-ha:
   enabled: false
 
-redis:
+valkey:
+  enabled: false
+
+valkey-cluster:
   enabled: false
 
 service:
