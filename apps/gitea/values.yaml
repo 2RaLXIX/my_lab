@@ -1,0 +1,25 @@
+gitea:
+  admin:
+    username: gitea
+    password: Spoon19
+    email: admin@home.arpa
+
+persistence:
+  enabled: true
+  size: 3Gi
+
+postgresql:
+  enabled: false
+
+redis-cluster:
+  enabled: false
+
+redis:
+  enabled: false
+
+service:
+  http:
+    type: ClusterIP
+
+ingress:
+  enabled: false
