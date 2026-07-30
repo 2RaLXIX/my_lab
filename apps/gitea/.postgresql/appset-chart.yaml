@@ -1,8 +1,0 @@
-namespace: gitea
-
-chart:
-  repoURL: https://charts.bitnami.com/bitnami
-  name: postgresql
-  targetRevision: "16.7.27"
-
-extraManifestsPath: apps/gitea/postgresql/manifests
