@@ -1,8 +1,0 @@
-namespace: gitea
-
-chart:
-  repoURL: https://dl.gitea.com/charts
-  name: gitea
-  targetRevision: "12.3.0"
-
-extraManifestsPath: apps/gitea/manifests

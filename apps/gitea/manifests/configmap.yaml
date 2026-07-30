@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: gitea-config
+  namespace: gitea
+
+data:
+
+  app.ini: |
+    APP_NAME = HomeLab Gitea
+    RUN_MODE = prod
+
+    [server]
+    DOMAIN = gitea.home.arpa
+    ROOT_URL = https://gitea.home.arpa/
+    HTTP_PORT = 3000
+    SSH_PORT = 22
+    START_SSH_SERVER = true
+
+    [database]
+    DB_TYPE = postgres
+    HOST = postgres-rw.gitea.svc.cluster.local:5432
+    NAME = gitea
+    USER = gitea
+
+    [repository]
+    ROOT = /data/git/repositories
+
+    [cache]
+    ADAPTER = redis
+    HOST = valkey.gitea.svc.cluster.local:6379
+
+    [session]
+    PROVIDER = redis
+    PROVIDER_CONFIG = network=tcp,addr=valkey.gitea.svc.cluster.local:6379
+
+    [security]
+    INSTALL_LOCK = true
+
+    [service]
+    DISABLE_REGISTRATION = true

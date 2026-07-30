@@ -17,5 +17,6 @@ spec:
     initdb:
       database: gitea
       owner: gitea
+
       secret:
         name: gitea-db-secret
