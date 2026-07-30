@@ -1,8 +1,0 @@
-namespace: gitea
-
-chart:
-  repoURL: oci://registry-1.docker.io/bitnamicharts
-  name: valkey
-  targetRevision: "3.0.8"
-
-extraManifestsPath: apps/valkey/manifests
