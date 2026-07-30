@@ -25,7 +25,7 @@ valkey-cluster:
 
 gitea:
   admin:
-    username: gitea
+    username: admin
     password: Spoon19
     email: admin@home.arpa
 
