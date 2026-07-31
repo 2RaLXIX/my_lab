@@ -5,7 +5,7 @@ resources:
   - manifests/pvc.yaml
   - manifests/secret.yaml
   - manifests/configmap.yaml
-  - manifests/deployment.yaml
+  - manifests/statefulset.yaml
   - manifests/service.yaml
   - manifests/ingress.yaml
   - manifests/namespace.yaml
