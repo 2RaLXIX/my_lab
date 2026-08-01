@@ -6,16 +6,12 @@ metadata:
   namespace: gitea
 
 spec:
-
   selector:
     app: gitea
-
   ports:
-
   - name: http
     port: 3000
     targetPort: 3000
-
   - name: ssh
     port: 22
     targetPort: 2222
