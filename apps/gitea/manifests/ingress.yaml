@@ -8,8 +8,8 @@ metadata:
 spec:
   tls:
     - hosts:
-        - uptime-kuma.home.arpa
-      secretName: uptime-kuma-tls
+        - gitea.home.arpa
+      secretName: gitea-tls
   ingressClassName: nginx
   rules:
   - host: gitea.home.arpa
