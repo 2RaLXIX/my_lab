@@ -6,6 +6,10 @@ metadata:
   namespace: gitea
 
 spec:
+  tls:
+    - hosts:
+        - uptime-kuma.home.arpa
+      secretName: uptime-kuma-tls
   ingressClassName: nginx
   rules:
   - host: gitea.home.arpa
