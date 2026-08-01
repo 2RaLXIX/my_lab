@@ -5,20 +5,16 @@ metadata:
   name: gitea
   namespace: gitea
 
-spec:
-│   tls:                                                                                                                                                                                                                                 │
-│   - hosts:                                                                                                                                                                                                                             │
-│     - gitea.home.arpa                                                                                                                                                                                                                  │
-│     secretName: gitea-tls
-  ingressClassName: nginx
-  rules:
-  - host: gitea.home.arpa
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: gitea
-            port:
-              number: 3000
+│ spec:                                                                                                                                                                                                                                  │
+│   ingressClassName: nginx                                                                                                                                                                                                              │
+│   rules:                                                                                                                                                                                                                               │
+│   - host: gitea.home.arpa                                                                                                                                                                                                              │
+│     http:                                                                                                                                                                                                                              │
+│       paths:                                                                                                                                                                                                                           │
+│       - backend:                                                                                                                                                                                                                       │
+│           service:                                                                                                                                                                                                                     │
+│             name: gitea                                                                                                                                                                                                                │
+│             port:                                                                                                                                                                                                                      │
+│               number: 3000                                                                                                                                                                                                             │
+│         path: /                                                                                                                                                                                                                        │
+│         pathType: Prefix                                                                                                                                                                                                               │
