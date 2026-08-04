@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: uptime-kuma
-        image: louislam/uptime-kuma:nightly2
+        image: louislam/uptime-kuma:2.5.0
         
         volumeMounts:
         - name: kuma-data
