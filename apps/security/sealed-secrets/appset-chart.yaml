@@ -1,5 +1,5 @@
 chart:
-  repoURL: 'https://sealed-secrets.github.io/sealed-secrets-helm'
+  repoURL: 'https://bitnami.github.io/sealed-secrets'
   name: sealed-secrets
   targetRevision: 2.17.3
 
