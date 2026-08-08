@@ -1,0 +1,26 @@
+securityContext: {}
+
+storage:
+  storageClass: local-path
+  size: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  resourcePolicy: keep
+
+config:
+  host: 0.0.0.0
+  insecure: true
+  disable_ipv6: true
+
+  init:
+    enabled: false
+
+service:
+  ui:
+    type: ClusterIP
+    port: 51821
+
+  wireguard:
+    type: NodePort
+    port: 51820
+    nodePort: 30200

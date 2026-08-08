@@ -1,0 +1,6 @@
+chart:
+  repoURL: oci://ghcr.io/slybase/charts
+  name: wg-easy
+  targetRevision: 1.1.0
+  namespace: wg-easy
+  extraManifestsPath: apps/networking/wg-easy/manifests
