@@ -18,3 +18,7 @@ spec:
                 name: wg-easy-ui
                 port:
                   number: 51821
+  tls:
+    - hosts:
+        - wg-easy.home.arpa
+      secretName: wg-easy-tls
