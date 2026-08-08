@@ -15,6 +15,16 @@ config:
   init:
     enabled: false
 
+metrics:
+  enabled: true
+
+  grafanaDashboard:
+    enabled: true
+
+serviceMonitor:
+  create: true
+  interval: 30s
+
 service:
   ui:
     type: ClusterIP
