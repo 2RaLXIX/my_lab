@@ -23,9 +23,11 @@ metrics:
 
 serviceMonitor:
   create: true
-  interval: 30s
+  annotations: {}
   labels:
     release: kube-prometheus-stack
+  selector: {}
+  interval: 30s
   metricsPath: /metrics/prometheus
 
 service:
