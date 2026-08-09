@@ -39,3 +39,7 @@ service:
     type: NodePort
     port: 51820
     nodePort: 30200
+
+extraEnvVars:
+  - name: WG_POST_UP
+    value: "iptables -t nat -I POSTROUTING 1 -s 10.8.0.0/24 -d 192.168.100.24 -j ACCEPT"
