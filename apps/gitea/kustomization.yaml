@@ -3,7 +3,7 @@ kind: Kustomization
 
 resources:
   - manifests/pvc.yaml
-  - manifests/secret.yaml
+  - manifests/sealedsecret.yaml
   - manifests/configmap.yaml
   - manifests/statefulset.yaml
   - manifests/service.yaml
