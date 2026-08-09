@@ -4,6 +4,8 @@ kind: Ingress
 metadata:
   name: gitea
   namespace: gitea
+  annotations:
+    cert-manager.io/cluster-issuer: local-ca
 
 spec:
   tls:
