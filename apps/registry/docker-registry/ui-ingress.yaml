@@ -4,6 +4,8 @@ metadata:
   name: docker-registry-ui
 spec:
   ingressClassName: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: local-ca
   rules:
     - host: registry-ui.home.arpa
       http:
