@@ -5,9 +5,6 @@ metadata:
   namespace: wg-easy
   annotations:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-  annotations:
-    cert-manager.io/cluster-issuer: local-ca
-
 spec:
   ingressClassName: nginx
   rules:
