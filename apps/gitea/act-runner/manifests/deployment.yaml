@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: act-runner
+  namespace: gitea
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: act-runner
+
+  template:
+    metadata:
+      labels:
+        app: act-runner
+
+    spec:
+
+      containers:
+
+      - name: dind
+
+        image: docker:27-dind
+
+        securityContext:
+          privileged: true
+
+        env:
+
+        - name: DOCKER_TLS_CERTDIR
+          value: ""
+
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+
+      - name: runner
+
+        image: gitea/act_runner:0.2.11
+
+        env:
+
+        - name: DOCKER_HOST
+          value: tcp://localhost:2375
+
+        - name: GITEA_INSTANCE_URL
+          value: http://gitea.gitea.svc.cluster.local:3000
+
+        - name: GITEA_RUNNER_NAME
+          value: k3s-act-runner
+
+        - name: GITEA_RUNNER_REGISTRATION_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: act-runner-secret
+              key: token
+
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+
+        volumeMounts:
+
+        - name: data
+          mountPath: /data
+
+      volumes:
+
+      - name: data
+        persistentVolumeClaim:
+          claimName: act-runner-data
