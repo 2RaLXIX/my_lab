@@ -28,6 +28,9 @@ spec:
         securityContext:
           privileged: true
 
+        args:
+        - --insecure-registry=docker.home.arpa
+
         env:
 
         - name: DOCKER_TLS_CERTDIR
