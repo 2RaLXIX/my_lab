@@ -102,6 +102,9 @@ spec:
         - name: GITEA__service__DISABLE_REGISTRATION
           value: "true"
 
+        - name: GITEA__actions__ENABLED
+          value: "true"
+
         - name: GITEA__security__SECRET_KEY
           valueFrom:
             secretKeyRef:
