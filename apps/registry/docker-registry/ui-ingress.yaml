@@ -6,6 +6,10 @@ spec:
   ingressClassName: nginx
   annotations:
     cert-manager.io/cluster-issuer: local-ca
+  tls:
+    - hosts:
+        - registry-ui.home.arpa
+      secretName: registry-ui-tls
   rules:
     - host: registry-ui.home.arpa
       http:
