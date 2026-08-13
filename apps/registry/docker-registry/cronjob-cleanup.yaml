@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: registry-cleanup
+
+spec:
+  schedule: "0 3 * * 0"
+  concurrencyPolicy: Forbid
+
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+
+          initContainers:
+
+          - name: prune-old-tags
+            image: anoxis/registry-cli:latest
+            args:
+              - "-r"
+              - "http://docker-registry:5000"
+              - "--delete"
+              - "--num"
+              - "5"
+
+          containers:
+
+          - name: garbage-collect
+            image: registry:2
+            command: ["registry", "garbage-collect", "/etc/docker/registry/config.yml"]
+            volumeMounts:
+            - name: registry-data
+              mountPath: /var/lib/registry
+
+          volumes:
+          - name: registry-data
+            persistentVolumeClaim:
+              claimName: docker-registry-pvc
