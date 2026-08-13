@@ -9,8 +9,8 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - registry.home.arpa
-      secretName: registry-tls
+        - docker.home.arpa
+      secretName: docker-tls
   rules:
     - host: docker.home.arpa
       http:
