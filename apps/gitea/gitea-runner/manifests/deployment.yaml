@@ -19,11 +19,13 @@ spec:
 
     spec:
 
-      containers:
+      initContainers:
 
       - name: dind
 
         image: docker:27-dind
+
+        restartPolicy: Always
 
         securityContext:
           privileged: true
@@ -36,6 +38,12 @@ spec:
         - name: DOCKER_TLS_CERTDIR
           value: ""
 
+        startupProbe:
+          tcpSocket:
+            port: 2375
+          periodSeconds: 1
+          failureThreshold: 30
+
         resources:
           requests:
             cpu: 100m
@@ -43,6 +51,8 @@ spec:
           limits:
             cpu: 1000m
             memory: 1Gi
+
+      containers:
 
       - name: runner
 
