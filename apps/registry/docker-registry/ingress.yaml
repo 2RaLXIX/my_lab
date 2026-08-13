@@ -7,6 +7,10 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - registry-ui.home.arpa
+      secretName: registry-ui-tls
   rules:
     - host: docker.home.arpa
       http:
