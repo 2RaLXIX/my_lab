@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 
 metadata:
-  name: act-runner
+  name: gitea-runner
   namespace: gitea
 
 spec:
@@ -10,12 +10,12 @@ spec:
 
   selector:
     matchLabels:
-      app: act-runner
+      app: gitea-runner
 
   template:
     metadata:
       labels:
-        app: act-runner
+        app: gitea-runner
 
     spec:
 
@@ -82,4 +82,4 @@ spec:
 
       - name: data
         persistentVolumeClaim:
-          claimName: act-runner-data
+          claimName: gitea-runner-data
