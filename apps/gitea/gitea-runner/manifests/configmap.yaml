@@ -39,7 +39,7 @@ data:
       options:
       workdir_parent:
       valid_volumes: []
-      docker_host: "tcp://localhost:2375"
+      docker_host: "unix:///var/run/docker.sock"
       force_pull: true
       force_rebuild: false
 

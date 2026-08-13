@@ -39,8 +39,8 @@ spec:
           value: ""
 
         startupProbe:
-          tcpSocket:
-            port: 2375
+          exec:
+            command: ["test", "-S", "/var/run/docker.sock"]
           periodSeconds: 1
           failureThreshold: 30
 
@@ -52,6 +52,11 @@ spec:
             cpu: 1000m
             memory: 1Gi
 
+        volumeMounts:
+
+        - name: docker-run
+          mountPath: /var/run
+
       containers:
 
       - name: runner
@@ -61,7 +66,7 @@ spec:
         env:
 
         - name: DOCKER_HOST
-          value: tcp://localhost:2375
+          value: unix:///var/run/docker.sock
 
         - name: GITEA_INSTANCE_URL
           value: http://gitea.gitea.svc.cluster.local:3000
@@ -94,6 +99,9 @@ spec:
         - name: config
           mountPath: /config
 
+        - name: docker-run
+          mountPath: /var/run
+
       volumes:
 
       - name: data
@@ -103,3 +111,6 @@ spec:
       - name: config
         configMap:
           name: gitea-runner-config
+
+      - name: docker-run
+        emptyDir: {}
