@@ -65,6 +65,9 @@ spec:
               name: gitea-runner-secret
               key: token
 
+        - name: CONFIG_FILE
+          value: /config/config.yaml
+
         resources:
           requests:
             cpu: 100m
@@ -78,8 +81,15 @@ spec:
         - name: data
           mountPath: /data
 
+        - name: config
+          mountPath: /config
+
       volumes:
 
       - name: data
         persistentVolumeClaim:
           claimName: gitea-runner-data
+
+      - name: config
+        configMap:
+          name: gitea-runner-config
