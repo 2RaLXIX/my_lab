@@ -16,13 +16,11 @@ spec:
           initContainers:
 
           - name: prune-old-tags
-            image: anoxis/registry-cli:latest
-            args:
-              - "-r"
-              - "http://docker-registry:5000"
-              - "--delete"
-              - "--num"
-              - "5"
+            image: python:3-alpine
+            command: ["python3", "/scripts/cleanup.py"]
+            volumeMounts:
+            - name: cleanup-script
+              mountPath: /scripts
 
           containers:
 
@@ -34,6 +32,9 @@ spec:
               mountPath: /var/lib/registry
 
           volumes:
+          - name: cleanup-script
+            configMap:
+              name: registry-cleanup-script
           - name: registry-data
             persistentVolumeClaim:
               claimName: docker-registry-pvc

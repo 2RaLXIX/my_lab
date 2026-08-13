@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: registry-cleanup-script
+
+data:
+
+  cleanup.py: |
+    import json
+    import urllib.request
+
+    REGISTRY = "http://docker-registry:5000"
+    KEEP = 5
+
+    def get(url, headers=None):
+        req = urllib.request.Request(url, headers=headers or {})
+        return urllib.request.urlopen(req)
+
+    def get_json(url, headers=None):
+        with get(url, headers) as resp:
+            return json.load(resp)
+
+    catalog = get_json(f"{REGISTRY}/v2/_catalog")
+    repos = catalog.get("repositories") or []
+
+    for repo in repos:
+        tags = (get_json(f"{REGISTRY}/v2/{repo}/tags/list").get("tags")) or []
+        entries = []
+
+        for tag in tags:
+            headers = {"Accept": "application/vnd.docker.distribution.manifest.v2+json"}
+            resp = get(f"{REGISTRY}/v2/{repo}/manifests/{tag}", headers)
+            digest = resp.headers.get("Docker-Content-Digest")
+            manifest = json.load(resp)
+            config_digest = manifest["config"]["digest"]
+            config = get_json(f"{REGISTRY}/v2/{repo}/blobs/{config_digest}")
+            created = config.get("created", "")
+            entries.append((created, tag, digest))
+
+        entries.sort(reverse=True)
+        to_delete = entries[KEEP:]
+
+        print(f"{repo}: {len(entries)} tags, keeping {min(KEEP, len(entries))}, deleting {len(to_delete)}")
+
+        for created, tag, digest in to_delete:
+            print(f"  deleting {repo}:{tag} ({digest})")
+            req = urllib.request.Request(f"{REGISTRY}/v2/{repo}/manifests/{digest}", method="DELETE")
+            try:
+                urllib.request.urlopen(req)
+            except Exception as e:
+                print(f"  failed to delete {repo}:{tag}: {e}")
+
+    print("done")
