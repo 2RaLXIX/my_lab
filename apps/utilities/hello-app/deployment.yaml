@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: hello-app
-        image: docker.home.arpa/hello-app:51a194d782d9a6ea2a27c8ca658ad04722286f5e
+        image: docker.home.arpa/hello-app:b04632ccd49f20e5cf4a48159eadb9333d88e5fd
 
         ports:
         - containerPort: 80
