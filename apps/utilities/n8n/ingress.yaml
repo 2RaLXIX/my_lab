@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: n8n
+  annotations:
+    cert-manager.io/cluster-issuer: local-ca
+  namespace: n8n
+
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - n8n.home.arpa
+      secretName: n8n-tls
+
+  rules:
+  - host: n8n.home.arpa
+
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+
+        backend:
+          service:
+            name: n8n
+            port:
+              number: 5678
