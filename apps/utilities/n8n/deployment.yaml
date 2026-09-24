@@ -37,6 +37,11 @@ spec:
             secretKeyRef:
               name: n8n-secret
               key: N8N_ENCRYPTION_KEY
+        - name: N8N_SMTP_PASS
+          valueFrom:
+            secretKeyRef:
+              name: n8n-secret
+              key: N8N_SMTP_PASS
 
         ports:
         - containerPort: 5678
