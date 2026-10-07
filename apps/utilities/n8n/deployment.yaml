@@ -20,6 +20,10 @@ spec:
       containers:
         - name: n8n
           image: n8nio/n8n:1.123.81
+          ports:
+            - name: http
+              containerPort: 5678
+              protocol: TCP
           envFrom:
             - configMapRef:
                 name: n8n-config
@@ -44,18 +48,16 @@ spec:
                 secretKeyRef:
                   name: n8n-secret
                   key: DB_POSTGRESDB_PASSWORD
-          ports:
-            - containerPort: 5678
           volumeMounts:
             - name: n8n-data
               mountPath: /home/node/.n8n
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "100m"
+              cpu: 100m
+              memory: 256Mi
             limits:
-              memory: "1Gi"
-              cpu: "1000m"
+              cpu: 1000m
+              memory: 1Gi
           readinessProbe:
             httpGet:
               path: /healthz
