@@ -19,3 +19,18 @@ data:
   N8N_SMTP_USER: "tural.hajibayli19@gmail.com"
   N8N_SMTP_SENDER: "n8n Home <tural.hajibayli19@gmail.com>"
   N8N_SMTP_SSL: "true"
+  
+  # === Новые параметры для боевого режима ===
+  # Оптимизация памяти движка V8 (Node.js) под лимиты пода
+  NODE_OPTIONS: "--max-old-space-size=800"
+  
+  # Автоматическая очистка старых логов (чтобы база не тормозила)
+  EXECUTIONS_DATA_PRUNE: "true"
+  EXECUTIONS_DATA_MAX_AGE: "168" # Хранить успешные логи 7 дней
+  EXECUTIONS_DATA_PRUNE_MAX_COUNT: "10000"
+  
+  # Подключение к PostgreSQL (используем твой инстанс из gitea)
+  DB_TYPE: "postgresdb"
+  DB_POSTGRESDB_HOST: "postgres-1.gitea.svc.cluster.local"
+  DB_POSTGRESDB_PORT: "5432"
+  DB_POSTGRESDB_DATABASE: "n8n"

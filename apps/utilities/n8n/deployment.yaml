@@ -1,12 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
-
 metadata:
   name: n8n
   namespace: n8n
 
 spec:
   replicas: 1
+
   strategy:
     type: Recreate
 
@@ -24,56 +24,68 @@ spec:
         fsGroup: 1000
 
       containers:
-      - name: n8n
-        image: n8nio/n8n:1.123.81
+        - name: n8n
+          image: n8nio/n8n:1.123.81
 
-        envFrom:
-        - configMapRef:
-            name: n8n-config
+          envFrom:
+            - configMapRef:
+                name: n8n-config
 
-        env:
-        - name: N8N_ENCRYPTION_KEY
-          valueFrom:
-            secretKeyRef:
-              name: n8n-secret
-              key: N8N_ENCRYPTION_KEY
-        - name: N8N_SMTP_PASS
-          valueFrom:
-            secretKeyRef:
-              name: n8n-secret
-              key: N8N_SMTP_PASS
+          env:
+            - name: N8N_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-secret
+                  key: N8N_ENCRYPTION_KEY
 
-        ports:
-        - containerPort: 5678
+            - name: N8N_SMTP_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-secret
+                  key: N8N_SMTP_PASS
 
-        volumeMounts:
-        - name: n8n-data
-          mountPath: /home/node/.n8n
+            - name: DB_POSTGRESDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-secret
+                  key: DB_POSTGRESDB_USER
 
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "100m"
+            - name: DB_POSTGRESDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-secret
+                  key: DB_POSTGRESDB_PASSWORD
 
-          limits:
-            memory: "768Mi"
-            cpu: "1000m"
+          ports:
+            - containerPort: 5678
 
-        readinessProbe:
-          httpGet:
-            path: /healthz
-            port: 5678
-          initialDelaySeconds: 15
-          periodSeconds: 10
+          volumeMounts:
+            - name: n8n-data
+              mountPath: /home/node/.n8n
 
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 5678
-          initialDelaySeconds: 30
-          periodSeconds: 20
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 5678
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 5678
+            initialDelaySeconds: 30
+            periodSeconds: 20
 
       volumes:
-      - name: n8n-data
-        persistentVolumeClaim:
-          claimName: n8n-pvc
+        - name: n8n-data
+          persistentVolumeClaim:
+            claimName: n8n-pvc
