@@ -13,6 +13,7 @@ data:
   N8N_DEFAULT_BINARY_DATA_MODE: "filesystem"
   N8N_RUNNERS_ENABLED: "true"
   N8N_METRICS: "false"
+  N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
   N8N_EMAIL_MODE: "smtp"
   N8N_SMTP_HOST: "smtp.gmail.com"
   N8N_SMTP_PORT: "465"
@@ -31,6 +32,6 @@ data:
   
   # Подключение к PostgreSQL (используем твой инстанс из gitea)
   DB_TYPE: "postgresdb"
-  DB_POSTGRESDB_HOST: "postgres-1.gitea.svc.cluster.local"
+  DB_POSTGRESDB_HOST: "postgres-rw.gitea.svc.cluster.local"
   DB_POSTGRESDB_PORT: "5432"
   DB_POSTGRESDB_DATABASE: "n8n"
