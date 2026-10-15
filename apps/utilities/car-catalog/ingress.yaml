@@ -1,0 +1,65 @@
+# Каталог и read-only API — без пароля (сеть home.arpa доступна только из LAN/WireGuard).
+# Сертификат выпускает cert-manager (local-ca) только по этому Ingress.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: car-catalog
+  annotations:
+    cert-manager.io/cluster-issuer: local-ca
+  namespace: car-catalog
+
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - carsdb.home.arpa
+      secretName: carsdb-tls
+
+  rules:
+  - host: carsdb.home.arpa
+
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+
+        backend:
+          service:
+            name: car-catalog
+            port:
+              number: 80
+---
+# Админка — тот же сервис, но под basic auth ingress-nginx.
+# Без cert-manager-аннотации: использует тот же carsdb-tls, второй Certificate не создаётся.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: car-catalog-admin
+  annotations:
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: car-catalog-admin-auth
+    nginx.ingress.kubernetes.io/auth-realm: "car-catalog admin"
+  namespace: car-catalog
+
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - carsdb.home.arpa
+      secretName: carsdb-tls
+
+  rules:
+  - host: carsdb.home.arpa
+
+    http:
+      paths:
+      - path: /admin
+        pathType: Prefix
+
+        backend:
+          service:
+            name: car-catalog
+            port:
+              number: 80

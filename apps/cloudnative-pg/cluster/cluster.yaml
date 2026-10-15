@@ -28,3 +28,22 @@ spec:
 
       secret:
         name: gitea-db-secret
+
+  # Роли, которыми управляет оператор. Роли, которых здесь нет
+  # (gitea, n8n_user), CNPG не трогает.
+  managed:
+    roles:
+      # роль PostgREST для каталога car-catalog: только чтение view api.cars
+      - name: car_anon
+        ensure: present
+        login: false
+        comment: "car-catalog: read-only api.cars"
+      - name: car_web
+        ensure: present
+        login: true
+        inherit: false            # своих прав нет, только SET ROLE car_anon
+        connectionLimit: 10
+        inRoles: [car_anon]
+        passwordSecret:
+          name: car-web-db        # sealedsecret-car-web.yaml, создаёт scripts/seal-car-catalog-secrets.sh
+        comment: "car-catalog: PostgREST authenticator"

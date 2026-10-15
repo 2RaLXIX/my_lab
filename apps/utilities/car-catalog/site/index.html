@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Каталог car_queue</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Гаражная ведомость: липкая панель фильтров, плотная таблица, в админке — очередь изменений с готовыми командами */
+:root{
+  --bg:#f3f2ee; --surface:#ffffff; --fg:#1d1f22; --muted:#6b6e72; --line:#dcdad3;
+  --accent:#c2410c; --accent-fg:#fff; --chip:#ecebe6; --idx-bg:#1d1f22; --idx-fg:#f3f2ee;
+  --ok:#15803d; --warn:#b45309; --bad:#b91c1c; --code-bg:#1d1f22; --code-fg:#e8e6e1;
+  --sedan:#2563eb; --suv:#4d7c0f; --crossover:#0e7490; --hatchback:#b45309; --wagon:#7c3aed; --coupe:#be123c;
+  --display:"Oswald","Arial Narrow",sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141517; --surface:#1c1d20; --fg:#e8e6e1; --muted:#9a9ca0; --line:#2e3034;
+  --accent:#fb923c; --accent-fg:#141517; --chip:#25272b; --idx-bg:#e8e6e1; --idx-fg:#141517;
+  --ok:#4ade80; --warn:#fbbf24; --bad:#f87171; --code-bg:#0d0e10; --code-fg:#e8e6e1;
+  --sedan:#60a5fa; --suv:#a3e635; --crossover:#22d3ee; --hatchback:#fbbf24; --wagon:#c4b5fd; --coupe:#fb7185; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141517; --surface:#1c1d20; --fg:#e8e6e1; --muted:#9a9ca0; --line:#2e3034;
+  --accent:#fb923c; --accent-fg:#141517; --chip:#25272b; --idx-bg:#e8e6e1; --idx-fg:#141517;
+  --ok:#4ade80; --warn:#fbbf24; --bad:#f87171; --code-bg:#0d0e10; --code-fg:#e8e6e1;
+  --sedan:#60a5fa; --suv:#a3e635; --crossover:#22d3ee; --hatchback:#fbbf24; --wagon:#c4b5fd; --coupe:#fb7185; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:14px;line-height:1.4}
+[hidden]{display:none!important}
+.wrap{max-width:920px;margin:0 auto;padding:24px max(16px,env(safe-area-inset-right)) 64px max(16px,env(safe-area-inset-left))}
+header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--display);font-weight:600;font-size:30px;letter-spacing:.01em;margin:0}
+h1 .mode{font-size:13px;letter-spacing:.1em;vertical-align:middle;margin-left:8px;padding:2px 8px;border-radius:3px;background:var(--accent);color:var(--accent-fg)}
+h2{font-family:var(--display);font-weight:500;font-size:18px;margin:0}
+.sub{color:var(--muted);margin:6px 0 0;max-width:64ch}
+code{font-family:var(--mono);font-size:.92em}
+button,input,select,textarea{font:inherit;color:inherit}
+.btn{font-size:13px;padding:7px 12px;border-radius:6px;border:1px solid var(--line);background:var(--surface);cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--fg)}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.btn.danger{color:var(--bad);border-color:currentColor}
+.btn.small{font-size:12px;padding:4px 9px}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,tr:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.src{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;font-size:13px;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
+.src.live .dot{background:var(--ok)} .src.snap .dot{background:var(--warn)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bar{position:sticky;top:0;z-index:3;background:var(--bg);padding:14px 0 10px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line);margin-top:8px}
+#q{width:100%;font-size:15px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.f{font-size:13px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);cursor:pointer}
+.f[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.meta{color:var(--muted);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-family:var(--display);font-weight:500;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px}
+td{padding:8px;border-top:1px solid var(--line);vertical-align:top}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--chip)}
+.id{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--accent);width:48px}
+.cls{font-size:12px;white-space:nowrap}
+.cls::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;background:var(--c)}
+.name{font-weight:500}
+.eng{color:var(--muted);font-size:12px;margin-top:2px;max-width:60ch}
+.idx{font-family:var(--mono);font-size:12px;background:var(--idx-bg);color:var(--idx-fg);padding:2px 6px;border-radius:3px;white-space:nowrap}
+.none{color:var(--muted);font-size:12px}
+.st{font-family:var(--mono);font-size:11px;padding:2px 6px;border-radius:3px;border:1px solid currentColor;white-space:nowrap;color:var(--muted)}
+.st.processing{color:var(--warn)} .st.done{color:var(--ok)}
+tr.dirty td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+tr.gone .name{text-decoration:line-through;color:var(--muted)}
+.tag{font-size:11px;color:var(--accent);margin-left:6px;white-space:nowrap}
+/* очередь изменений */
+.panel{margin-top:18px;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:14px}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.hint{color:var(--muted);font-size:13px;margin:6px 0 0}
+.chg{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+.chg-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.op{font-family:var(--mono);font-size:11px;font-weight:500;padding:2px 6px;border-radius:3px;color:#fff;margin-right:6px}
+.op.insert{background:#15803d} .op.update{background:#2563eb} .op.delete{background:#b91c1c}
+.applied{color:var(--ok);font-size:12px;font-weight:600}
+.diff{margin:8px 0;font-size:13px;display:grid;grid-template-columns:max-content 1fr;gap:2px 10px}
+.diff dt{color:var(--muted);font-family:var(--mono);font-size:12px}
+.diff dd{margin:0;overflow-wrap:anywhere}
+.diff del{color:var(--bad)} .diff ins{color:var(--ok);text-decoration:none}
+pre.cmd{background:var(--code-bg);color:var(--code-fg);font-family:var(--mono);font-size:12px;line-height:1.5;padding:12px;border-radius:6px;overflow-x:auto;margin:8px 0;white-space:pre}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;background:none;padding:4px 10px;font-size:12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+details.settings summary{cursor:pointer;font-family:var(--display);font-size:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:12px}
+label.fld{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+label.fld input,label.fld select,label.fld textarea{font-size:14px;color:var(--fg);padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+label.fld textarea{resize:vertical;min-height:72px}
+.cnt{font-family:var(--mono);font-size:11px;align-self:flex-end}
+.cnt.over{color:var(--bad)}
+/* редактор */
+dialog{border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);padding:0;width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
+dialog::backdrop{background:rgb(0 0 0 / .45)}
+dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
+.dlg-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.err{color:var(--bad);font-size:13px;min-height:1em;margin:0}
+.warn{color:var(--warn);font-size:13px;margin:0}
+.dlg-foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.foot-r{display:flex;gap:8px;margin-left:auto}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:6px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:calc(100% - 32px);z-index:10}
+#toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+@media (max-width:560px){.hide-sm{display:none}h1{font-size:24px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Каталог car_queue<span class="mode" id="modeBadge" hidden>АДМИН</span></h1>
+      <p class="sub" id="lead"></p>
+    </div>
+  </header>
+
+  <div class="src" id="src"><span class="dot"></span><span id="srcText">Загрузка…</span><button class="btn small" id="reload" type="button">Обновить из базы</button></div>
+
+  <div class="tools" id="adminTools" hidden>
+    <button class="btn primary" id="addBtn" type="button">+ Добавить машину</button>
+  </div>
+
+  <section class="panel" id="changes" hidden aria-labelledby="chgTitle">
+    <div class="panel-head">
+      <h2 id="chgTitle">Изменения к применению</h2>
+      <div class="row">
+        <button class="btn small" id="clearApplied" type="button" hidden>Убрать применённые</button>
+        <button class="btn small danger" id="clearAll" type="button">Очистить всё</button>
+      </div>
+    </div>
+    <p class="hint">Страница сама в базу не пишет. Выполни команду в терминале, где настроен kubectl, затем нажми «Обновить из базы»: применённые изменения отметятся галочкой.</p>
+    <div id="chgList"></div>
+    <div class="chg" id="allBox" hidden>
+      <div class="chg-top"><strong>Все неприменённые одной транзакцией</strong><button class="btn small" type="button" data-copy="all">Копировать</button></div>
+      <pre class="cmd" id="allCmd"></pre>
+    </div>
+  </section>
+
+  <div class="bar">
+    <input id="q" type="search" placeholder="Поиск: название, индекс, мотор или id (W220, teana, 1JZ, 53)" autocomplete="off" aria-label="Поиск">
+    <div class="filters" id="filters"></div>
+    <div class="meta" id="count"></div>
+  </div>
+
+  <div class="tbl">
+    <table>
+      <thead><tr><th>id</th><th class="hide-sm">Класс</th><th>Машина</th><th>Кузов</th><th id="stHead">Статус</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <section class="panel" id="settingsBox" hidden>
+    <details class="settings" id="settings">
+      <summary>Настройки команды</summary>
+      <p class="hint">Куда и под кем выполнять SQL. Хранится только в этом браузере.</p>
+      <div class="grid">
+        <label class="fld">Namespace кластера БД<input data-set="ns"></label>
+        <label class="fld">Под<input data-set="pod"></label>
+        <label class="fld">Контейнер<input data-set="container"></label>
+        <label class="fld">База<input data-set="db"></label>
+        <label class="fld">Пользователь<input data-set="user"></label>
+        <label class="fld">Как передать пароль
+          <select data-set="auth">
+            <option value="prompt">Спросить один раз в терминале</option>
+            <option value="secret">Взять из Secret в кластере</option>
+            <option value="interactive">Интерактивный psql (вставить SQL руками)</option>
+          </select>
+        </label>
+        <label class="fld" data-show="secret">Namespace Secret<input data-set="secNs"></label>
+        <label class="fld" data-show="secret">Имя Secret<input data-set="secName"></label>
+        <label class="fld" data-show="secret">Ключ пароля<input data-set="secKey"></label>
+        <label class="fld">Primary
+          <select data-set="primary">
+            <option value="fixed">Всегда указанный под</option>
+            <option value="auto">Искать текущий primary CNPG</option>
+          </select>
+        </label>
+        <label class="fld" data-show="auto">Имя CNPG Cluster<input data-set="cluster"></label>
+      </div>
+      <div class="row" style="margin-top:12px"><button class="btn small" id="resetSet" type="button">Сбросить по умолчанию</button></div>
+    </details>
+  </section>
+</div>
+
+<dialog id="ed" aria-labelledby="edTitle">
+  <form id="edForm" method="dialog" novalidate>
+    <div class="dlg-head"><h2 id="edTitle">Правка</h2><button class="btn small" type="button" id="copySel" hidden>SELECT для n8n</button></div>
+    <label class="fld">Класс
+      <select name="car_class" required></select>
+    </label>
+    <label class="fld">Название (car_name) <span class="cnt" data-cnt="car_name"></span>
+      <input name="car_name" maxlength="150" required autocomplete="off" placeholder="Toyota Mark II (JZX110)">
+    </label>
+    <label class="fld">Индекс кузова (body_index), латиницей
+      <input name="body_index" maxlength="16" autocomplete="off" placeholder="JZX110" style="font-family:var(--mono)">
+    </label>
+    <label class="fld">Моторы (engine_info) <span class="cnt" data-cnt="engine_info"></span>
+      <textarea name="engine_info" maxlength="250" placeholder="1JZ-GE 2.5L (200 л.с.) / 1JZ-GTE Turbo (280 л.с.)"></textarea>
+    </label>
+    <label class="fld">Статус
+      <select name="status"></select>
+    </label>
+    <p class="warn" id="edWarn" hidden></p>
+    <p class="err" id="edErr" role="alert"></p>
+    <div class="dlg-foot">
+      <button class="btn danger" type="button" id="delBtn" hidden>Удалить</button>
+      <div class="foot-r">
+        <button class="btn" type="button" id="cancelBtn">Отмена</button>
+        <button class="btn primary" type="submit" id="saveBtn">Получить команду</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+// Запасной снимок на 15.10.2026: [id, класс, название, индекс кузова]
+const SNAP=[[1,"sedan","Mercedes-Benz S-Class (W140) «Кабан»","W140"],[2,"sedan","Mercedes-Benz S-Class (W220)","W220"],[3,"sedan","BMW 5 Series (E39)","E39"],[4,"sedan","BMW 7 Series (E38) «Бумер»","E38"],[5,"sedan","Toyota Mark II (JZX90) «Самурай»","JZX90"],[6,"sedan","Toyota Mark II / Chaser / Cresta (JZX100)","JZX100"],[7,"sedan","Toyota Crown (S170/S180) «Атлет»","S170"],[8,"sedan","Audi A8 (D2)","D2"],[9,"sedan","Audi A8 (D3)","D3"],[10,"sedan","Toyota Camry (XV30) «Стрекоза»","XV30"],[11,"sedan","Toyota Camry (XV40)","XV40"],[12,"sedan","Opel Omega B",null],[13,"sedan","Lexus LS 400 (UCF20)","UCF20"],[14,"sedan","Lexus LS 430 (UCF30)","UCF30"],[15,"sedan","Chrysler 300C",null],[16,"sedan","Volkswagen Passat B5+",null],[17,"sedan","Mazda 6 (GG)","GG"],[18,"sedan","Mitsubishi Lancer Evolution IX","CT9A"],[19,"sedan","Subaru Impreza WRX STI (GD)","GD"],[20,"sedan","Nissan Teana (J31/J32)","J31"],[21,"sedan","Infiniti M35 / M45 (Y50)","Y50"],[22,"sedan","Volkswagen Phaeton","3D"],[23,"sedan","Jaguar XJ (X350)","X350"],[24,"sedan","Maserati Quattroporte V (M139)","M139"],[25,"sedan","Alfa Romeo 156 / 159",null],[26,"sedan","Volvo S80 I",null],[27,"sedan","Saab 9-5 I",null],[28,"sedan","Hyundai Sonata EF (ТагАЗ)",null],[29,"sedan","Daewoo Espero / Nexia",null],[30,"sedan","Renault Megane II (седан)",null],[31,"sedan","Skoda Octavia Tour (A4)","A4"],[32,"sedan","Ford Mondeo III",null],[33,"sedan","Cadillac CTS I",null],[34,"sedan","Lincoln Town Car III",null],[35,"sedan","Rover 75",null],[36,"sedan","Citroen C6",null],[37,"sedan","Peugeot 406",null],[38,"sedan","Peugeot 607",null],[39,"sedan","BMW M5 (E34)","E34"],[40,"sedan","BMW M5 (E39)","E39"],[41,"sedan","BMW M5 (E60)","E60"],[42,"sedan","Mercedes-Benz E55 AMG (W210)","W210"],[43,"sedan","Mercedes-Benz E55 AMG (W211)","W211"],[44,"sedan","Mercedes-Benz E63 AMG (W211)","W211"],[45,"sedan","Audi RS6 (C5)","C5"],[46,"sedan","Audi S6 (C6)","C6"],[47,"sedan","Lexus IS 200 / IS 300 (XE10)","XE10"],[48,"sedan","Toyota Altezza RS200","SXE10"],[49,"sedan","Nissan Laurel (C35)","C35"],[50,"sedan","Toyota Aristo (JZS161)","JZS161"],[51,"sedan","Mitsubishi Galant (EA5A) «Акула»","EA5A"],[221,"sedan","Mercedes-Benz S500L (W220) «Развалюха друга»","W220"],[222,"sedan","Toyota Crown (S170/S180) «Атлет»","S180"],[223,"sedan","Nissan Teana (J31/J32)","J32"],[52,"suv","Toyota Land Cruiser 100","J100"],[53,"suv","Toyota Land Cruiser 80","J80"],[54,"suv","Toyota Land Cruiser Prado 90","J90"],[55,"suv","Toyota Land Cruiser Prado 120","J120"],[56,"suv","Mercedes-Benz G-Class (W463) «Гелик»","W463"],[57,"suv","Jeep Grand Cherokee (ZJ)","ZJ"],[58,"suv","Jeep Grand Cherokee (WJ)","WJ"],[59,"suv","Jeep Wrangler (TJ)","TJ"],[60,"suv","Mitsubishi Pajero II",null],[61,"suv","Mitsubishi Pajero III / IV",null],[62,"suv","Nissan Patrol (Y61)","Y61"],[63,"suv","Range Rover (P38A)","P38A"],[64,"suv","Range Rover Sport (L320)","L320"],[65,"suv","Range Rover L322","L322"],[66,"suv","Hummer H2",null],[67,"suv","Hummer H3",null],[68,"suv","Chevrolet Tahoe (GMT840)","GMT840"],[69,"suv","Chevrolet Suburban (GMT800)","GMT800"],[70,"suv","Cadillac Escalade (GMT900)","GMT900"],[71,"suv","Lexus LX 470 (UZJ100)","UZJ100"],[72,"suv","Lexus GX 470 (J120)","J120"],[73,"suv","Infiniti QX56 (WA60)","WA60"],[74,"suv","Nissan Terrano II",null],[75,"suv","Ford Explorer II / III",null],[76,"suv","SsangYong Rexton I",null],[77,"suv","SsangYong Kyron / Actyon",null],[78,"suv","Kia Sorento I (BL)","BL"],[79,"suv","Hyundai Galloper",null],[80,"suv","UAZ Patriot (УАЗ 3163)",null],[81,"suv","Lada Niva (ВАЗ-21214)",null],[82,"suv","Suzuki Grand Vitara XL-7",null],[83,"suv","Daihatsu Terios",null],[84,"suv","Isuzu Trooper / Bighorn",null],[85,"suv","Opel Frontera B",null],[86,"suv","Land Rover Defender 90/110",null],[87,"suv","Discovery II (L318)","L318"],[88,"suv","Toyota Sequoia I",null],[89,"suv","Lexus LX 570","J200"],[90,"suv","Infiniti FX35 / FX45 (S50)","S50"],[91,"suv","Porsche Cayenne (955/957)","955"],[92,"suv","Volkswagen Touareg I (7L)","7L"],[93,"suv","BMW X5 (E53) «Бумер»","E53"],[94,"suv","Mercedes-Benz ML (W163)","W163"],[95,"suv","Mercedes-Benz ML / GLE (W164)","W164"],[96,"suv","Volvo XC90 I",null],[236,"suv","Porsche Cayenne (955/957)","957"],[97,"crossover","Lexus RX 300 (XU10) «Рекс»","XU10"],[98,"crossover","Lexus RX 350 / RX 400h (XU30)","XU30"],[99,"crossover","Subaru Forester (SG)","SG"],[100,"crossover","Subaru Forester (SH)","SH"],[101,"crossover","Toyota RAV4 (XA20)","XA20"],[102,"crossover","Toyota RAV4 (XA30)","XA30"],[103,"crossover","Honda CR-V I (RD1)","RD1"],[104,"crossover","Honda CR-V II (RD4)","RD4"],[105,"crossover","Honda CR-V III (RE)","RE"],[106,"crossover","Nissan Murano (Z50)","Z50"],[107,"crossover","Nissan Murano (Z51)","Z51"],[108,"crossover","Nissan X-Trail (T30)","T30"],[109,"crossover","Nissan X-Trail (T31)","T31"],[110,"crossover","Mazda CX-7",null],[111,"crossover","Mazda CX-9 (TB)","TB"],[112,"crossover","Hyundai Tucson I",null],[113,"crossover","Hyundai Santa Fe I / II",null],[114,"crossover","Kia Sportage II",null],[115,"crossover","Kia Sorento II (XM)","XM"],[116,"crossover","Suzuki Grand Vitara II (JT)","JT"],[117,"crossover","Mitsubishi Outlander I",null],[118,"crossover","Mitsubishi Outlander XL",null],[119,"crossover","Ford Maverick / Escape I",null],[120,"crossover","Chevrolet Captiva",null],[121,"crossover","Opel Antara",null],[122,"crossover","Renault Duster (ранние версии 2009-2010)",null],[123,"crossover","Dodge Nitro",null],[124,"crossover","Jeep Compass / Patriot",null],[125,"crossover","Infiniti EX35 (J50)","J50"],[126,"crossover","Audi Q7 (4L)","4L"],[127,"crossover","BMW X3 (E83)","E83"],[128,"crossover","BMW X6 (E71)","E71"],[129,"crossover","Mercedes-Benz GL (X164)","X164"],[130,"crossover","Volvo XC60 I",null],[131,"hatchback","Volkswagen Golf IV","1J"],[132,"hatchback","Volkswagen Golf V GTI","1K"],[133,"hatchback","Honda Civic (EK)","EK"],[134,"hatchback","Honda Civic Type R (EP3 / FN2)","EP3"],[135,"hatchback","Ford Focus I",null],[136,"hatchback","Ford Focus II RS / ST",null],[137,"hatchback","Mazda 3 (BK) «Матрешка»","BK"],[138,"hatchback","ВАЗ-2114 «Четырка»",null],[139,"hatchback","ВАЗ-2112",null],[140,"hatchback","Lada Priora Hatchback (ВАЗ-2172)",null],[141,"hatchback","Renault Megane II (хэтчбек)",null],[142,"hatchback","Renault Clio RS (2.0 / III)",null],[143,"hatchback","Peugeot 206 RC / GTi",null],[144,"hatchback","Peugeot 307 / 308",null],[145,"hatchback","Citroen C4 I",null],[146,"hatchback","Audi A3 (8P)","8P"],[147,"hatchback","BMW 1 Series (E87)","E87"],[148,"hatchback","Toyota Auris I",null],[149,"hatchback","Toyota Yaris II",null],[150,"hatchback","Mitsubishi Colt VI",null],[151,"hatchback","Nissan Almera N16",null],[152,"hatchback","Nissan Note E11",null],[153,"hatchback","Hyundai Getz",null],[154,"hatchback","Kia Cee`d I",null],[155,"hatchback","Skoda Fabia II RS",null],[156,"hatchback","Seat Leon II (1P)","1P"],[157,"hatchback","Alfa Romeo Giulietta",null],[158,"hatchback","Fiat Grande Punto",null],[159,"hatchback","Mini Cooper S (R53 / R56)","R53"],[160,"hatchback","Chevrolet Cruze (хэтчбек)",null],[161,"hatchback","ZAZ Sens / Chance / Lanos",null],[224,"hatchback","Honda Civic Type R (EP3 / FN2)","FN2"],[225,"hatchback","Mini Cooper S (R53 / R56)","R56"],[162,"wagon","Audi A6 Allroad Quattro (C5)","C5"],[163,"wagon","Audi RS4 Avant (B7)","B7"],[164,"wagon","Volvo V70 (XC70) I / II поколение",null],[165,"wagon","Volkswagen Passat B3 / B4 Variant",null],[166,"wagon","Volkswagen Passat B5 / B5.5 Variant",null],[167,"wagon","Subaru Legacy Outback (BH / BP)","BH"],[168,"wagon","Toyota Caldina GT-T / GT-Four (ST215/ST246)","ST215"],[169,"wagon","Toyota Mark II Qualis / Blit",null],[170,"wagon","Nissan Stagea (WC34 / M35)","WC34"],[171,"wagon","Mercedes-Benz E-Class W124 Estate","S124"],[172,"wagon","Mercedes-Benz E-Class W210 / W211 Estate","S210"],[173,"wagon","BMW 5 Series Touring (E34 / E39 / E61)","E34"],[174,"wagon","Ford Focus II Wagon",null],[175,"wagon","Skoda Octavia Combi (A5)","A5"],[176,"wagon","Opel Omega B Caravan",null],[177,"wagon","Lada 111 (ВАЗ-2111)",null],[178,"wagon","Lada Largus",null],[179,"wagon","Peugeot 406 Break",null],[180,"wagon","Peugeot 307 SW",null],[181,"wagon","Citroen C5 Break (с гидропневматикой Hydractive)",null],[182,"wagon","Alfa Romeo 156 Sportwagon",null],[183,"wagon","Mazda 6 Wagon (GG)","GY"],[184,"wagon","Honda Accord Wagon (CF7 / CM2)","CF7"],[185,"wagon","Hyundai Elantra Touring / i30 CW",null],[186,"wagon","Kia Cee`d SW",null],[187,"wagon","Chevrolet Lacetti SW",null],[188,"wagon","Renault Megane Estate",null],[189,"wagon","Saab 9-5 Estate",null],[190,"wagon","Jaguar X-Type Estate",null],[191,"wagon","Dodge Magnum",null],[226,"wagon","Subaru Legacy Outback (BH / BP)","BP"],[227,"wagon","Toyota Caldina GT-T / GT-Four (ST215/ST246)","ST246"],[228,"wagon","Nissan Stagea (WC34 / M35)","M35"],[229,"wagon","BMW 5 Series Touring (E34 / E39 / E61)","E39"],[230,"wagon","BMW 5 Series Touring (E34 / E39 / E61)","E61"],[231,"wagon","Honda Accord Wagon (CF7 / CM2)","CM2"],[237,"wagon","Mercedes-Benz E-Class W210 / W211 Estate","S211"],[192,"coupe","BMW 3 Series Coupe (E46)","E46"],[193,"coupe","BMW M3 (E46)","E46"],[194,"coupe","BMW 6 Series (E63)","E63"],[195,"coupe","BMW 8 Series (E31)","E31"],[196,"coupe","Audi TT (8N)","8N"],[197,"coupe","Audi A5 / S5 (8T)","8T"],[198,"coupe","Mercedes-Benz CLK (W208 / W209)","W208"],[199,"coupe","Mercedes-Benz CL (W215 / W216)","W215"],[200,"coupe","Mercedes-Benz SL (R230)","R230"],[201,"coupe","Toyota Celica (T230)","T230"],[202,"coupe","Toyota Supra (A80)","A80"],[203,"coupe","Nissan Skyline GT-R (R34)","R34"],[204,"coupe","Nissan Skyline (350GT / Coupe V35)","V35"],[205,"coupe","Nissan 350Z (Z33)","Z33"],[206,"coupe","Mazda RX-8",null],[207,"coupe","Mitsubishi Eclipse (2G)",null],[208,"coupe","Mitsubishi Eclipse (3G / 4G)",null],[209,"coupe","Honda Prelude (BB)","BB"],[210,"coupe","Honda S2000 (AP1 / AP2)","AP1"],[211,"coupe","Hyundai Coupe (Tiburon / Tuscani)",null],[212,"coupe","Chrysler Crossfire",null],[213,"coupe","Ford Mustang (SN95 / S197)","SN95"],[214,"coupe","Chevrolet Camaro (IV поколение)",null],[215,"coupe","Pontiac Firebird / Trans Am (4-е поколение)",null],[216,"coupe","Alfa Romeo Brera",null],[217,"coupe","Maserati GranTurismo",null],[218,"coupe","Aston Martin DB9",null],[219,"coupe","Porsche 911 (996 / 997)","996"],[220,"coupe","Volvo C30",null],[232,"coupe","Mercedes-Benz CLK (W208 / W209)","W209"],[233,"coupe","Mercedes-Benz CL (W215 / W216)","W216"],[234,"coupe","Honda S2000 (AP1 / AP2)","AP2"],[235,"coupe","Ford Mustang (SN95 / S197)","S197"],[238,"coupe","Porsche 911 (996 / 997)","997"]];
+const API="/api";
+const CLASSES={sedan:"Седаны",suv:"Внедорожники",crossover:"Кроссоверы",hatchback:"Хэтчбеки",wagon:"Универсалы",coupe:"Купе"};
+const CORDER=Object.keys(CLASSES);
+const BASE_STATUSES=["pending","processing","done"];
+const FIELDS=["car_class","car_name","body_index","engine_info","status"];
+const MAX={car_class:50,car_name:150,engine_info:250,status:20,body_index:16};
+const ADMIN=location.pathname.startsWith("/admin")||location.protocol==="file:";
+const DEF={ns:"gitea",pod:"postgres-1",container:"postgres",db:"n8n",user:"n8n_user",auth:"secret",secNs:"n8n",secName:"n8n-secret",secKey:"DB_POSTGRESDB_PASSWORD",primary:"fixed",cluster:"postgres"};
+const LS="carq.admin.v1";
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm=v=>v==null?"":String(v).replace(/\s+/g," ").trim();
+
+let rows=[],live=false,loadErr="",loadedAt=null,cls="all";
+let st=loadState();
+
+function loadState(){
+  let s=null;
+  try{s=JSON.parse(localStorage.getItem(LS)||"null")}catch(e){}
+  return {changes:Array.isArray(s?.changes)?s.changes:[],settings:Object.assign({},DEF,s?.settings||{})};
+}
+function saveState(){try{localStorage.setItem(LS,JSON.stringify(st))}catch(e){}}
+
+/* ---------- данные ---------- */
+async function load(){
+  $("#srcText").textContent="Загрузка…";
+  try{
+    const r=await fetch(API+"/cars?select=id,car_class,car_name,engine_info,body_index,status,created_at&order=id.asc",{headers:{Accept:"application/json"},cache:"no-store"});
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    const j=await r.json();
+    if(!Array.isArray(j))throw new Error("ответ не массив");
+    rows=j;live=true;loadErr="";loadedAt=new Date();
+  }catch(e){
+    rows=SNAP.map(([id,c,n,b])=>({id,car_class:c,car_name:n,body_index:b,engine_info:null,status:null}));
+    live=false;loadErr=e.message||String(e);
+  }
+  rows.sort((a,b)=>(ci(a.car_class)-ci(b.car_class))||(a.id-b.id));
+  renderSrc();renderTable();renderChanges();
+}
+const ci=c=>{const i=CORDER.indexOf(c);return i<0?99:i};
+const byId=id=>rows.find(r=>r.id===id);
+
+function renderSrc(){
+  const el=$("#src");el.classList.toggle("live",live);el.classList.toggle("snap",!live);
+  $("#srcText").textContent=live
+    ?`Живые данные из базы · ${rows.length} машин · ${loadedAt.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})}`
+    :`API недоступно (${loadErr}), показан снимок от 15.10.2026 без моторов и статусов`;
+  $("#stHead").hidden=!live;
+}
+
+/* ---------- таблица ---------- */
+function buildFilters(){
+  const f=$("#filters");f.innerHTML="";
+  [["all","Все"],...Object.entries(CLASSES)].forEach(([k,v])=>{
+    const b=document.createElement("button");b.type="button";b.className="f";b.textContent=v;b.dataset.k=k;
+    b.setAttribute("aria-pressed",String(k===cls));
+    b.onclick=()=>{cls=k;f.querySelectorAll(".f").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));renderTable()};
+    f.appendChild(b);
+  });
+}
+function pendingFor(id){return st.changes.filter(c=>c.id===id&&!c.applied)}
+function renderTable(){
+  const q=$("#q").value.trim().toLowerCase();
+  const list=rows.filter(r=>(cls==="all"||r.car_class===cls)&&(!q||String(r.id)===q||
+    [r.car_name,r.body_index,r.engine_info].some(v=>(v||"").toLowerCase().includes(q))));
+  $("#rows").innerHTML=list.map(r=>{
+    const p=ADMIN?pendingFor(r.id):[];
+    const gone=p.some(c=>c.type==="delete");
+    return `<tr tabindex="0" data-id="${r.id}" class="${p.length?"dirty":""} ${gone?"gone":""}">
+      <td class="id">${r.id}</td>
+      <td class="cls hide-sm" style="--c:var(--${esc(r.car_class)},var(--muted))">${esc(CLASSES[r.car_class]||r.car_class)}</td>
+      <td><div class="name">${esc(r.car_name)}${p.length?`<span class="tag">${gone?"на удаление":"в очереди"}</span>`:""}</div>${r.engine_info?`<div class="eng">${esc(r.engine_info)}</div>`:""}</td>
+      <td>${r.body_index?`<span class="idx">${esc(r.body_index)}</span>`:'<span class="none">нет</span>'}</td>
+      ${live?`<td><span class="st ${esc(r.status||"")}">${esc(r.status||"—")}</span></td>`:""}
+    </tr>`}).join("");
+  $("#count").textContent=`Показано ${list.length} из ${rows.length}`;
+}
+function rowAction(tr){
+  const id=+tr.dataset.id;
+  if(ADMIN)openEditor(byId(id));else copy(`SELECT * FROM car_queue WHERE id = ${id};`,"Скопировано: SELECT … id = "+id);
+}
+
+/* ---------- SQL и команды ---------- */
+function lit(v){
+  const s=norm(v);
+  return s===""?"NULL":"'"+s.replace(/'/g,"''")+"'";
+}
+function sqlOf(c){
+  const a=c.after;
+  if(c.type==="insert")
+    return `INSERT INTO car_queue (car_class, car_name, engine_info, body_index, status)\nVALUES (${lit(a.car_class)}, ${lit(a.car_name)}, ${lit(a.engine_info)}, ${lit(a.body_index)}, ${lit(a.status||"pending")})\nRETURNING id, car_class, car_name, body_index, status;`;
+  if(c.type==="update")
+    return `UPDATE car_queue\nSET ${Object.keys(a).map(f=>`${f} = ${lit(a[f])}`).join(",\n    ")}\nWHERE id = ${c.id}\nRETURNING id, car_class, car_name, body_index, status;`;
+  return `DELETE FROM car_queue\nWHERE id = ${c.id}\nRETURNING id, car_class, car_name, body_index;`;
+}
+function shq(s){return /^[A-Za-z0-9_.\/-]+$/.test(s)?s:"'"+String(s).replace(/'/g,"'\\''")+"'"}
+function command(sqlBody){
+  const s=st.settings;
+  const tx=`BEGIN;\n${sqlBody}\nCOMMIT;`;
+  const pod=s.primary==="auto"
+    ?`"$(kubectl get pod -n ${shq(s.ns)} -l cnpg.io/cluster=${shq(s.cluster)},cnpg.io/instanceRole=primary -o name)"`
+    :shq(s.pod);
+  const target=`-n ${shq(s.ns)} ${pod} -c ${shq(s.container)}`;
+  const psql=`psql -h localhost -U ${shq(s.user)} -d ${shq(s.db)} -v ON_ERROR_STOP=1`;
+  if(s.auth==="interactive")
+    return `# 1) открой psql\nkubectl exec -it ${target} -- ${psql}\n\n# 2) вставь в него\n${tx}`;
+  let pre="",pw;
+  if(s.auth==="secret"){
+    pw=`"$(kubectl get secret -n ${shq(s.secNs)} ${shq(s.secName)} -o jsonpath='{.data.${s.secKey.replace(/'/g,"")}}' | base64 -d)"`;
+  }else{
+    pre=`[ -n "$PGPASSWORD" ] || { printf 'Пароль ${s.user.replace(/'/g,"")}: '; stty -echo; read -r PGPASSWORD; stty echo; echo; }\n`;
+    pw=`"$PGPASSWORD"`;
+  }
+  return `${pre}kubectl exec -i ${target} -- \\\n  env PGPASSWORD=${pw} \\\n  ${psql} <<'CARSQL'\n${tx}\nCARSQL`;
+}
+
+/* ---------- очередь изменений ---------- */
+function isApplied(c){
+  if(!live)return false;
+  if(c.type==="delete")return !byId(c.id);
+  if(c.type==="update"){const r=byId(c.id);return !!r&&Object.keys(c.after).every(f=>norm(r[f])===norm(c.after[f]))}
+  return rows.some(r=>r.id>c.maxId&&r.car_class===c.after.car_class&&norm(r.car_name)===norm(c.after.car_name)&&norm(r.body_index)===norm(c.after.body_index));
+}
+function checkApplied(){
+  let n=0;
+  st.changes.forEach(c=>{if(!c.applied&&isApplied(c)){c.applied=true;n++}});
+  if(n){saveState();toast(`Применено в базе: ${n}`)}
+}
+function diffHtml(c){
+  const lab={car_class:"класс",car_name:"название",body_index:"кузов",engine_info:"моторы",status:"статус"};
+  if(c.type==="delete")return `<dl class="diff"><dt>удаляется</dt><dd>${esc(c.before.car_name)} ${c.before.body_index?"· "+esc(c.before.body_index):""}</dd></dl>`;
+  return `<dl class="diff">${Object.keys(c.after).filter(f=>c.type==="update"||norm(c.after[f])!=="").map(f=>{
+    const nv=norm(c.after[f])||"NULL";
+    return `<dt>${lab[f]}</dt><dd>${c.type==="update"?`<del>${esc(norm(c.before[f])||"NULL")}</del> → `:""}<ins>${esc(nv)}</ins></dd>`}).join("")}</dl>`;
+}
+function renderChanges(){
+  if(!ADMIN)return;
+  checkApplied();
+  const ch=st.changes;
+  $("#changes").hidden=!ch.length;
+  const view=localViewMode();
+  $("#chgList").innerHTML=ch.slice().reverse().map(c=>{
+    const title=c.type==="insert"?esc(c.after.car_name):`#${c.id} · ${esc(c.before.car_name)}`;
+    const body=view==="sql"?`BEGIN;\n${sqlOf(c)}\nCOMMIT;`:command(sqlOf(c));
+    return `<div class="chg" id="c-${c.uid}">
+      <div class="chg-top"><div><span class="op ${c.type}">${c.type.toUpperCase()}</span><strong>${title}</strong></div>
+        <div class="row">${c.applied?'<span class="applied">✓ применено</span>':""}
+          <div class="seg" role="group" aria-label="Формат">
+            <button type="button" data-view="cmd" aria-pressed="${view==="cmd"}">Команда</button><button type="button" data-view="sql" aria-pressed="${view==="sql"}">Только SQL</button>
+          </div>
+          <button class="btn small" type="button" data-copy="${c.uid}">Копировать</button>
+          <button class="btn small" type="button" data-del="${c.uid}" aria-label="Убрать из списка">✕</button></div></div>
+      ${diffHtml(c)}
+      <pre class="cmd">${esc(body)}</pre></div>`}).join("");
+  const open=ch.filter(c=>!c.applied);
+  $("#allBox").hidden=open.length<2;
+  if(open.length>=2)$("#allCmd").textContent=allText();
+  $("#clearApplied").hidden=!ch.some(c=>c.applied);
+  renderTable();
+}
+function allText(){
+  const body=st.changes.filter(c=>!c.applied).map(sqlOf).join("\n\n");
+  return localViewMode()==="sql"?`BEGIN;\n${body}\nCOMMIT;`:command(body);
+}
+function localViewMode(){return st.view==="sql"?"sql":"cmd"}
+function addChange(c){
+  c.uid=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  c.at=new Date().toISOString();c.applied=false;
+  st.changes.push(c);saveState();renderChanges();
+  copy(st.view==="sql"?`BEGIN;\n${sqlOf(c)}\nCOMMIT;`:command(sqlOf(c)),"Команда готова и скопирована");
+  requestAnimationFrame(()=>document.getElementById("c-"+c.uid)?.scrollIntoView({behavior:"smooth",block:"center"}));
+}
+
+/* ---------- редактор ---------- */
+let editing=null,dupConfirmed=false,delArmed=false;
+const form=$("#edForm");
+function fillSelects(cur){
+  form.car_class.innerHTML=Object.entries(CLASSES).map(([k,v])=>`<option value="${k}">${v} (${k})</option>`).join("");
+  const sts=[...new Set([...BASE_STATUSES,...rows.map(r=>r.status).filter(Boolean),cur].filter(Boolean))];
+  form.status.innerHTML=sts.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("");
+}
+function openEditor(r){
+  editing=r||null;dupConfirmed=false;delArmed=false;
+  fillSelects(r?.status);
+  $("#edTitle").textContent=r?`Правка #${r.id}`:"Новая машина";
+  form.car_class.value=r?.car_class||(cls!=="all"?cls:"sedan");
+  form.car_name.value=r?.car_name||"";
+  form.body_index.value=r?.body_index||"";
+  form.engine_info.value=r?.engine_info||"";
+  form.status.value=r?.status||"pending";
+  $("#delBtn").hidden=!r;$("#delBtn").textContent="Удалить";
+  $("#copySel").hidden=!r;
+  $("#edErr").textContent="";$("#edWarn").hidden=true;
+  $("#saveBtn").textContent="Получить команду";
+  if(r&&!live){$("#edWarn").hidden=false;$("#edWarn").textContent="API недоступно, правка идёт по снимку. Моторы и статус в нём неизвестны, поэтому их изменения в команду не попадут."}
+  counters();
+  $("#ed").showModal();
+  form.car_name.focus();
+}
+function counters(){
+  form.querySelectorAll("[data-cnt]").forEach(el=>{
+    const f=el.dataset.cnt,n=form[f].value.length;el.textContent=`${n}/${MAX[f]}`;el.classList.toggle("over",n>MAX[f]);
+  });
+}
+function readForm(){
+  return {car_class:form.car_class.value,car_name:norm(form.car_name.value),body_index:norm(form.body_index.value),
+    engine_info:norm(form.engine_info.value),status:form.status.value};
+}
+form.addEventListener("input",()=>{counters();$("#edErr").textContent="";if(!editing){dupConfirmed=false;$("#saveBtn").textContent="Получить команду";$("#edWarn").hidden=true}});
+form.addEventListener("submit",e=>{
+  e.preventDefault();
+  const v=readForm();
+  const err=[];
+  if(!v.car_name)err.push("нужно название");
+  for(const f of FIELDS)if(v[f].length>MAX[f])err.push(`${f} длиннее ${MAX[f]} символов`);
+  if(/[а-яё]/i.test(v.body_index))err.push("индекс кузова латиницей (сейчас есть кириллица)");
+  if(err.length){$("#edErr").textContent="Не готово: "+err.join("; ");return}
+  if(!editing){
+    const dup=rows.find(r=>norm(r.car_name).toLowerCase()===v.car_name.toLowerCase()&&norm(r.body_index)===v.body_index);
+    if(dup&&!dupConfirmed){
+      dupConfirmed=true;$("#edWarn").hidden=false;
+      $("#edWarn").textContent=`Такая уже есть: #${dup.id} ${dup.car_name}${dup.body_index?" ("+dup.body_index+")":""}. Нажми ещё раз, если это осознанно.`;
+      $("#saveBtn").textContent="Всё равно добавить";return;
+    }
+    if(!v.body_index)delete v.body_index;
+    addChange({type:"insert",after:v,maxId:Math.max(0,...rows.map(r=>r.id))});
+  }else{
+    const after={};
+    for(const f of FIELDS){
+      if(!live&&(f==="engine_info"||f==="status"))continue; // в снимке их нет, нельзя сравнить
+      if(norm(v[f])!==norm(editing[f]))after[f]=v[f];
+    }
+    if(!Object.keys(after).length){$("#edErr").textContent="Ничего не изменилось";return}
+    const before={};FIELDS.forEach(f=>before[f]=editing[f]);
+    addChange({type:"update",id:editing.id,before,after});
+  }
+  $("#ed").close();
+});
+$("#delBtn").onclick=()=>{
+  if(!delArmed){delArmed=true;$("#delBtn").textContent="Точно удалить?";return}
+  const before={};FIELDS.forEach(f=>before[f]=editing[f]);
+  addChange({type:"delete",id:editing.id,before,after:{}});
+  $("#ed").close();
+};
+$("#cancelBtn").onclick=()=>$("#ed").close();
+$("#copySel").onclick=()=>copy(`SELECT * FROM car_queue WHERE id = ${editing.id};`,"SELECT для n8n скопирован");
+
+/* ---------- настройки ---------- */
+function bindSettings(){
+  document.querySelectorAll("[data-set]").forEach(el=>{
+    el.value=st.settings[el.dataset.set];
+    el.addEventListener("input",()=>{st.settings[el.dataset.set]=el.value.trim();saveState();showSet();renderChanges()});
+  });
+  showSet();
+}
+function showSet(){
+  document.querySelectorAll("[data-show]").forEach(el=>{
+    const k=el.dataset.show;el.hidden=k==="secret"?st.settings.auth!=="secret":st.settings.primary!=="auto";
+  });
+}
+$("#resetSet").onclick=()=>{st.settings=Object.assign({},DEF);saveState();bindSettings();renderChanges()};
+
+/* ---------- утилиты ---------- */
+let tt;
+function toast(m){const el=$("#toast");el.textContent=m;el.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("on"),2200)}
+function copy(text,msg){
+  // по http без TLS navigator.clipboard недоступен, поэтому есть запасной путь
+  const fallback=()=>{
+    const ta=document.createElement("textarea");ta.value=text;ta.setAttribute("readonly","");
+    ta.style.cssText="position:fixed;top:0;left:0;opacity:0";document.body.appendChild(ta);ta.select();
+    let ok=false;try{ok=document.execCommand("copy")}catch(e){}
+    ta.remove();toast(ok?(msg||"Скопировано"):"Не удалось скопировать, выдели вручную");
+  };
+  if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(text).then(()=>toast(msg||"Скопировано"),fallback);
+  else fallback();
+}
+
+/* ---------- события ---------- */
+$("#rows").addEventListener("click",e=>{const tr=e.target.closest("tr");if(tr)rowAction(tr)});
+$("#rows").addEventListener("keydown",e=>{if(e.key==="Enter"){const tr=e.target.closest("tr");if(tr)rowAction(tr)}});
+$("#q").addEventListener("input",renderTable);
+$("#reload").onclick=load;
+$("#addBtn").onclick=()=>openEditor(null);
+$("#changes").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.view){st.view=b.dataset.view;saveState();renderChanges();return}
+  if(b.dataset.copy==="all"){copy(allText(),"Скопирована общая транзакция");return}
+  if(b.dataset.copy){const c=st.changes.find(x=>x.uid===b.dataset.copy);if(c)copy(localViewMode()==="sql"?`BEGIN;\n${sqlOf(c)}\nCOMMIT;`:command(sqlOf(c)));return}
+  if(b.dataset.del){st.changes=st.changes.filter(x=>x.uid!==b.dataset.del);saveState();renderChanges()}
+});
+$("#clearApplied").onclick=()=>{st.changes=st.changes.filter(c=>!c.applied);saveState();renderChanges()};
+$("#clearAll").onclick=function(){
+  if(this.dataset.armed){st.changes=[];saveState();renderChanges();delete this.dataset.armed;this.textContent="Очистить всё";return}
+  this.dataset.armed="1";this.textContent="Точно очистить?";setTimeout(()=>{delete this.dataset.armed;this.textContent="Очистить всё"},3000);
+};
+document.addEventListener("visibilitychange",()=>{if(ADMIN&&live&&document.visibilityState==="visible")load()});
+
+/* ---------- старт ---------- */
+if(ADMIN){
+  $("#modeBadge").hidden=false;$("#adminTools").hidden=false;$("#settingsBox").hidden=false;
+  $("#lead").innerHTML="Нажми на строку, чтобы изменить машину, или добавь новую. На каждое изменение страница выдаёт команду <code>kubectl exec … psql</code> под нужным пользователем.";
+  document.title="Админка car_queue";
+  bindSettings();
+}else{
+  $("#lead").innerHTML="Все машины очереди с id, индексом кузова и статусом. Нажми на строку, чтобы скопировать <code>SELECT * FROM car_queue WHERE id = …</code> для SQL-ноды n8n.";
+}
+buildFilters();
+load();
+</script>
+</body>
+</html>
