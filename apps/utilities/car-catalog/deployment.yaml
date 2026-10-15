@@ -55,6 +55,7 @@ spec:
             - {name: PGRST_SERVER_HOST, value: "127.0.0.1"}   # снаружи пода недоступен, только через nginx
             - {name: PGRST_SERVER_PORT, value: "3000"}
             - {name: PGRST_ADMIN_SERVER_PORT, value: "3001"}
+            - {name: PGRST_ADMIN_SERVER_HOST, value: "0.0.0.0"}  # /live и /ready для kubelet; по умолчанию admin берёт SERVER_HOST=127.0.0.1
             - {name: PGRST_OPENAPI_MODE, value: disabled}
             - {name: PGRST_LOG_LEVEL, value: warn}
             - {name: PGRST_DB_CHANNEL_ENABLED, value: "true"}   # NOTIFY pgrst, 'reload schema' перечитывает view без рестарта
