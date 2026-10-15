@@ -29,6 +29,10 @@ data:
   EXECUTIONS_DATA_PRUNE: "true"
   EXECUTIONS_DATA_MAX_AGE: "168" # Хранить успешные логи 7 дней
   EXECUTIONS_DATA_PRUNE_MAX_COUNT: "10000"
+
+  # Доступ к $env из Code-нод и выражений (нужен для ELEVENLABS_API_KEY).
+  # Внимание: открывает Code-нодам ВСЕ env пода, включая пароль БД и ключ шифрования.
+  N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
   
   # Подключение к PostgreSQL (используем твой инстанс из gitea)
   DB_TYPE: "postgresdb"

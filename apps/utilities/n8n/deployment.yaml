@@ -48,6 +48,13 @@ spec:
                 secretKeyRef:
                   name: n8n-secret
                   key: DB_POSTGRESDB_PASSWORD
+            # Ключ ElevenLabs для Code-ноды «TTS Timestamps» ($env.ELEVENLABS_API_KEY).
+            # Отдельный секрет, создаётся scripts/seal-elevenlabs-secret.sh
+            - name: ELEVENLABS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: elevenlabs
+                  key: ELEVENLABS_API_KEY
           volumeMounts:
             - name: n8n-data
               mountPath: /home/node/.n8n
